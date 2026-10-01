@@ -1,16 +1,15 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { config } from "dotenv";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
 const globalForDb = globalThis as unknown as { waypointPool?: Pool };
 
-// Local scripts and the Next.js workspace run from different package folders.
-// Load the repository-level file only as a fallback; hosted environments keep
-// using their injected DATABASE_URL.
-if (!process.env.DATABASE_URL) {
-  config({ path: new URL("../../../.env", import.meta.url), quiet: true });
-}
+// NOTE: Do not load dotenv here. This module is bundled by Next.js/Turbopack
+// (see apps/web/next.config.ts which already loads the repo-root .env via
+// loadEnvConfig). A static `new URL(".../.env", import.meta.url)` pattern makes
+// Turbopack try to bundle the .env file at build time and fails in CI where
+// .env is gitignored. CLI entrypoints (migrate.ts / seed.ts) load dotenv
+// explicitly instead; hosted environments use the injected DATABASE_URL.
 
 export function getPool(): Pool {
   if (!globalForDb.waypointPool) {

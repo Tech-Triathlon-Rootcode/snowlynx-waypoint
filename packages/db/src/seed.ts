@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { config } from "dotenv";
 import { parse } from "csv-parse/sync";
 import { hash } from "bcryptjs";
 import { sql } from "drizzle-orm";
@@ -24,6 +25,13 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const seedDir = join(here, "..", "seed-data");
+
+// Local CLI only (never bundled by Next.js): load .env via process.cwd()
+// so bundlers never try to statically resolve it. Must run before getDb().
+if (!process.env.DATABASE_URL) {
+  config({ path: join(process.cwd(), ".env"), quiet: true });
+  config({ path: join(process.cwd(), "../../.env"), quiet: true });
+}
 const db = getDb();
 
 async function csv<T>(name: string): Promise<T[]> {
