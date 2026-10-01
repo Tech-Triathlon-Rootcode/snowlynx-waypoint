@@ -15,6 +15,11 @@
     "db:seed": "pnpm --filter @snowlynx/db seed",
     "db:setup": "pnpm db:migrate && pnpm db:seed"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0",
