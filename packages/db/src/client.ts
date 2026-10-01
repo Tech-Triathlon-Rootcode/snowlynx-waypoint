@@ -1,15 +1,18 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { config } from "dotenv";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
 const globalForDb = globalThis as unknown as { waypointPool?: Pool };
+const dbPackageDir = dirname(fileURLToPath(import.meta.url));
 
 // Local scripts and the Next.js workspace run from different package folders.
 // Load the repository-level file only as a fallback; hosted environments keep
 // using their injected DATABASE_URL.
 if (!process.env.DATABASE_URL) {
-  config({ path: new URL("../../../.env", import.meta.url), quiet: true });
+  config({ path: resolve(dbPackageDir, "../../../.env"), quiet: true });
 }
 
 export function getPool(): Pool {
