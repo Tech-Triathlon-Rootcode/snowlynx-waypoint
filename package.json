@@ -1,0 +1,23 @@
+{
+  "name": "snowlynx-waypoint",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "pnpm --filter @snowlynx/web dev",
+    "build": "pnpm --filter @snowlynx/web build",
+    "start": "pnpm --filter @snowlynx/web start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @snowlynx/db generate",
+    "db:migrate": "pnpm --filter @snowlynx/db migrate",
+    "db:seed": "pnpm --filter @snowlynx/db seed",
+    "db:setup": "pnpm db:migrate && pnpm db:seed"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

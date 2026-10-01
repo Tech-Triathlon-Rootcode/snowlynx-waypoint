@@ -1,0 +1,11 @@
+import { PageHeading } from "@/components/page-heading";
+import { WorkflowSpine } from "@/components/workflow-spine";
+import { listOrders, listVehicles } from "@/lib/queries";
+
+export default async function CapacityPage() {
+  const [orderRows, vehicleRows] = await Promise.all([listOrders(), listVehicles()]);
+  const reefers = vehicleRows.filter((vehicle) => vehicle.temperature === "reefer");
+  const vans = vehicleRows.filter((vehicle) => vehicle.type === "van");
+  const chilledVolume = orderRows.filter((order) => order.temperature === "chilled").reduce((sum, order) => sum + order.volumeM3, 0);
+  return <><WorkflowSpine active="Assign" /><PageHeading title="Capacity outlook" description="Separate confirmed operational capacity from illustrative future planning signals." /><div className="banner"><strong>Forecast boundary.</strong> The four-week demand values below are demonstration assumptions; fleet and outlet capabilities come from the supplied records.</div><div className="stats"><div className="stat"><strong>{vehicleRows.length}</strong><span>vehicles</span></div><div className="stat"><strong>{reefers.length}</strong><span>refrigerated</span></div><div className="stat"><strong>{vans.length}</strong><span>small vans</span></div><div className="stat"><strong>{chilledVolume.toFixed(1)} m³</strong><span>seed-day chilled demand</span></div></div><div className="grid equal"><section className="card"><div className="card-pad"><p className="eyebrow">Four-week illustration</p><h2>Peliyagoda volume</h2><div className="stack" style={{marginTop:20}}>{[["Week 27",68],["Week 28",76],["Week 29",88],["Week 30",81]].map(([label,value]) => <div key={label}><div className="actions" style={{justifyContent:"space-between"}}><strong>{label}</strong><span>{value} m³</span></div><div className="progress"><i style={{width:`${value}%`}} /></div></div>)}</div></div></section><section className="card"><div className="card-pad"><p className="eyebrow">Planning signals</p><h2>Protect scarce capability</h2><ul><li>Keep refrigerated vans available for chilled, van-only outlets.</li><li>Use ambient trucks before consuming reefer capacity for ambient loads.</li><li>Review prior deferrals before deciding which orders move again.</li><li>Confirm future estimates before staffing or leasing decisions.</li></ul></div></section></div></>;
+}
