@@ -25,8 +25,8 @@ export async function createOrderAction(formData: FormData) {
   if (temperature === "chilled" && outlet.brand !== "Fresh") redirect(`/store/new?error=${encodeURIComponent("Chilled ordering is available for Fresh outlets in this demonstration.")}`);
   const late = orderTime > "16:00";
   const [latest] = await db.select({ id: orders.id }).from(orders).orderBy(desc(orders.id)).limit(1);
-  const nextNumber = Math.max(2713, Number(latest?.id.replace("ORD-", "") ?? 2712) + 1);
-  const id = `ORD-${nextNumber}`;
+  const latestNumber = Number(latest?.id.match(/\d+$/)?.[0] ?? 0);
+  const id = `ORD-${String(latestNumber + 1).padStart(4, "0")}`;
   await db.transaction(async (tx) => {
     await tx.insert(orders).values({ id, outletId, requestedDate: DEMO_DATE, temperature, weightKg, volumeM3, handlingUnits, status: late ? "NEXT_RUN" : "CONFIRMED" });
     await tx.insert(auditEvents).values({ orderId: id, actorRole: user.role, eventType: late ? "ORDER_AFTER_CUTOFF" : "ORDER_CONFIRMED", summary: late ? "Received after the 16:00 cutoff; moved to the next run." : "Order confirmed before the 16:00 cutoff." });

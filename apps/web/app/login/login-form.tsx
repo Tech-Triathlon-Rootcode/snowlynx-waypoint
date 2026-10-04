@@ -3,14 +3,13 @@
 import { useActionState } from "react";
 import { loginAction } from "./actions";
 
-const accounts = [
-  ["Dispatcher", "dispatcher@waypoint.demo"],
-  ["Loader", "loader@waypoint.demo"],
-  ["Driver", "driver@waypoint.demo"],
-  ["Store manager", "manager@waypoint.demo"],
-] as const;
+type LoginAccount = { email: string; name: string; role: string };
 
-export function LoginForm() {
+function roleLabel(role: string) {
+  return role === "manager" ? "Store manager" : `${role.slice(0, 1).toUpperCase()}${role.slice(1)}`;
+}
+
+export function LoginForm({ accounts }: { accounts: LoginAccount[] }) {
   const [state, action, pending] = useActionState(loginAction, {});
   return (
     <div className="login-layout">
@@ -25,16 +24,16 @@ export function LoginForm() {
         <div>
           <p className="eyebrow">Judge access</p>
           <h2>Sign in to a role workspace</h2>
-          <p className="muted">All seeded accounts use <code>SnowlynX2026!</code></p>
+          <p className="muted">Choose a seeded role account, then use the demo password provided with the deployment.</p>
         </div>
         <form action={action} className="form-stack">
           {state.error ? <p className="form-error" role="alert">{state.error}</p> : null}
-          <label>Email address<input name="email" type="email" autoComplete="username" required defaultValue="dispatcher@waypoint.demo" /></label>
-          <label>Password<input name="password" type="password" autoComplete="current-password" required defaultValue="SnowlynX2026!" /></label>
+          <label>Email address<input name="email" type="email" autoComplete="username" required /></label>
+          <label>Password<input name="password" type="password" autoComplete="current-password" required /></label>
           <button className="btn primary" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
         </form>
         <div className="account-list">
-          {accounts.map(([label, email]) => <button key={email} type="button" onClick={() => { const field = document.querySelector<HTMLInputElement>('input[name="email"]'); if (field) field.value = email; }}><strong>{label}</strong><span>{email}</span></button>)}
+          {accounts.map((account) => <button key={account.email} type="button" onClick={() => { const field = document.querySelector<HTMLInputElement>('input[name="email"]'); if (field) field.value = account.email; }}><strong>{roleLabel(account.role)}</strong><span>{account.name} · {account.email}</span></button>)}
         </div>
       </section>
     </div>

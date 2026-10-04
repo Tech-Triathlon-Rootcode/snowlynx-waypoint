@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import type { Role } from "@snowlynx/domain";
 import type { SessionUser } from "@/lib/auth";
 import { logoutAction } from "@/app/login/actions";
+import { formatDeliveryDate } from "@/lib/dates";
 
 const nav: Record<Role, Array<[string, string, string]>> = {
   dispatcher: [
@@ -29,7 +30,7 @@ const nav: Record<Role, Array<[string, string, string]>> = {
   ],
 };
 
-export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
+export function AppShell({ user, deliveryDate, network, children }: { user: SessionUser; deliveryDate: string; network: { outlets: number; vehicles: number }; children: ReactNode }) {
   const current = usePathname();
   return (
     <div className="shell">
@@ -47,8 +48,8 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="date-card"><small>Saturday delivery run</small><strong>27 June 2026</strong></div>
-          <div className="network-note">120 outlets · 60 vehicles<br />Peliyagoda & Kandy</div>
+          <div className="date-card"><small>Delivery run</small><strong>{formatDeliveryDate(deliveryDate)}</strong></div>
+          <div className="network-note">{network.outlets} outlets · {network.vehicles} vehicles<br />Scope: {user.scopeId ?? "All operations"}</div>
           <div className="user-card">
             <span className="avatar">{user.name.slice(0, 1)}</span>
             <span><strong>{user.name}</strong><small>{user.email}</small></span>

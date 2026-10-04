@@ -4,9 +4,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { WorkflowSpine } from "@/components/workflow-spine";
 import { checkLoadedOrderAction } from "@/features/loading/actions";
 import { getLoadingState, getPrimaryTrip, getTripOrders } from "@/lib/queries";
+import { requireUser } from "@/lib/auth";
 
 export default async function LoadingPage() {
-  const trip = await getPrimaryTrip();
+  const user = await requireUser("loader");
+  const trip = await getPrimaryTrip({ depot: user.scopeId });
   if (!trip) return <><PageHeading title="Loading checklist" description="No trip is available for this delivery day." /></>;
   const [tripOrders, state] = await Promise.all([getTripOrders(trip.id), getLoadingState(trip.id, trip.manifestVersion)]);
   const checked = new Set(state.checks.map((check) => check.orderId));

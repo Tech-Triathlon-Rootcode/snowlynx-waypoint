@@ -5,10 +5,12 @@ import { WorkflowSpine } from "@/components/workflow-spine";
 import { startTripAction } from "@/features/delivery/actions";
 import { DriverWorkspace } from "@/features/delivery/driver-workspace";
 import { getPrimaryTrip, getTripOrders } from "@/lib/queries";
+import { requireUser } from "@/lib/auth";
 
 type Search = Promise<{ notice?: string; error?: string }>;
 export default async function DriverRoutePage({ searchParams }: { searchParams: Search }) {
-  const [search, trip] = await Promise.all([searchParams, getPrimaryTrip()]);
+  const [search, user] = await Promise.all([searchParams, requireUser("driver")]);
+  const trip = await getPrimaryTrip({ vehicleId: user.scopeId });
   if (!trip) return <PageHeading title="My route" description="No route is assigned." />;
   const tripOrders = await getTripOrders(trip.id);
   return <>

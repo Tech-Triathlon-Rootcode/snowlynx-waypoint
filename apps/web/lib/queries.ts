@@ -1,7 +1,8 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import {
   auditEvents,
+  calendarDays,
   deliveryProofs,
   getDb,
   loadingChecks,
@@ -10,8 +11,10 @@ import {
   outlets,
   receipts,
   trips,
+  users,
   vehicles,
 } from "@snowlynx/db";
+import { nextOperatingDateAfter } from "@/lib/dates";
 
 export const DEMO_DATE = "2026-06-27";
 
@@ -63,7 +66,12 @@ export async function listVehicles() {
   return getDb().select().from(vehicles).orderBy(asc(vehicles.id));
 }
 
-export async function getPrimaryTrip() {
+export async function getPrimaryTrip(scope: { vehicleId?: string | null; depot?: string | null } = {}) {
+  const scopeCondition = scope.vehicleId
+    ? eq(trips.vehicleId, scope.vehicleId)
+    : scope.depot
+      ? eq(vehicles.depot, scope.depot)
+      : undefined;
   const [trip] = await getDb()
     .select({
       id: trips.id,
@@ -84,9 +92,35 @@ export async function getPrimaryTrip() {
     })
     .from(trips)
     .innerJoin(vehicles, eq(trips.vehicleId, vehicles.id))
-    .where(and(eq(trips.vehicleId, "VEH035"), eq(trips.deliveryDate, DEMO_DATE), eq(trips.tripNumber, 1)))
+    .where(scopeCondition ? and(eq(trips.deliveryDate, DEMO_DATE), scopeCondition) : eq(trips.deliveryDate, DEMO_DATE))
+    .orderBy(asc(trips.tripNumber), asc(trips.vehicleId))
     .limit(1);
   return trip ?? null;
+}
+
+export async function getNextOperatingDate(after = DEMO_DATE) {
+  const [day] = await getDb()
+    .select({ day: calendarDays.day })
+    .from(calendarDays)
+    .where(and(gt(calendarDays.day, after), eq(calendarDays.isOperating, true)))
+    .orderBy(asc(calendarDays.day))
+    .limit(1);
+  return day?.day ?? nextOperatingDateAfter(after);
+}
+
+export async function getNetworkCounts() {
+  const [outletRows, vehicleRows] = await Promise.all([
+    getDb().select({ count: sql<number>`count(*)::int` }).from(outlets),
+    getDb().select({ count: sql<number>`count(*)::int` }).from(vehicles),
+  ]);
+  return { outlets: outletRows[0]?.count ?? 0, vehicles: vehicleRows[0]?.count ?? 0 };
+}
+
+export async function listLoginAccounts() {
+  return getDb()
+    .select({ email: users.email, name: users.name, role: users.role })
+    .from(users)
+    .orderBy(asc(users.role));
 }
 
 export async function getTripOrders(tripId: string) {
