@@ -9,7 +9,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/domain/package.json packages/domain/package.json
 COPY packages/db/package.json packages/db/package.json
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --network-concurrency=4 --fetch-retries=5 --fetch-timeout=300000
 
 FROM deps AS tooling
 COPY . .
