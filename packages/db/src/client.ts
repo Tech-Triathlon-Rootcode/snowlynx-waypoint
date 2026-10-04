@@ -17,7 +17,9 @@ export function getPool(): Pool {
     if (!connectionString) throw new Error("DATABASE_URL is required.");
     globalForDb.waypointPool = new Pool({
       connectionString,
-      max: process.env.NODE_ENV === "production" ? 4 : 10,
+      // Vercel creates a pool per warm function instance. Keep the application
+      // side pool at one connection when using Supabase's transaction pooler.
+      max: process.env.NODE_ENV === "production" ? 1 : 10,
       ssl: connectionString.includes("localhost") || connectionString.includes("postgres:5432") ? false : { rejectUnauthorized: false },
     });
   }
