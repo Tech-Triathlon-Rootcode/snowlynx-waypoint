@@ -40,5 +40,5 @@ The driver downloads the released manifest before departure. The route snapshot 
 ## Deployment
 
 - Local/judge: multi-stage Next.js image plus PostgreSQL and a one-shot migration/seed service.
-- Vercel: `apps/web` with `DATABASE_URL`, `SESSION_SECRET`, and `APP_URL` configured as protected environment variables.
+- Vercel: repository-root deployment using `vercel.json`, with `DATABASE_URL`, `SESSION_SECRET`, and `APP_URL` configured as protected environment variables.
 - Database migration is a controlled deployment step, never a per-request side effect.
